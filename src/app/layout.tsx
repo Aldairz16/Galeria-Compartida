@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
     title: "Pixly",
     description: "Comparte tus fotos en alta calidad con Pixly",
+    icons: {
+        icon: "/favicon.ico",
+    },
 }
 
 export default function RootLayout({
