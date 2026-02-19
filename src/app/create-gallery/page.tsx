@@ -19,14 +19,14 @@ export default function CreateGalleryPage() {
         setError(null)
 
         if (!title.trim()) {
-            setError("Title required")
+            setError("Título requerido")
             setLoading(false)
             return
         }
 
         try {
             const { data: { user } } = await supabase.auth.getUser()
-            if (!user) throw new Error("Not authenticated")
+            if (!user) throw new Error("No autenticado")
 
             const { error: insertError } = await supabase
                 .from("galleries")
@@ -37,7 +37,7 @@ export default function CreateGalleryPage() {
             router.push("/")
             router.refresh()
         } catch (err: unknown) {
-            let msg = "Error creating gallery"
+            let msg = "Error al crear galería"
             if (err instanceof Error) msg = err.message
             setError(msg)
         } finally {
@@ -50,28 +50,28 @@ export default function CreateGalleryPage() {
             <div style={{ width: '100%', maxWidth: '400px', marginBottom: '24px' }}>
                 <Link href="/" className="btn-link" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8eaed' }}>
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>Volver</span>
                 </Link>
             </div>
 
             <form onSubmit={handleSubmit} className="login-card">
-                <h2 className="login-title" style={{ fontSize: '1.25rem', marginBottom: '24px' }}>New Gallery</h2>
+                <h2 className="login-title" style={{ fontSize: '1.25rem', marginBottom: '24px' }}>Nueva Galería</h2>
 
                 {error && <div className="message message-error">{error}</div>}
 
                 <div className="form-group">
-                    <label className="label">Gallery Name</label>
+                    <label className="label">Nombre (Ej. Viajes 2024)</label>
                     <input
                         className="input"
                         value={title}
                         onChange={e => setTitle(e.target.value)}
-                        placeholder="e.g. Vacation 2024"
+                        placeholder="Ej. Europa"
                         autoFocus
                     />
                 </div>
 
                 <button type="submit" disabled={loading} className="btn btn-primary btn-full mt-4">
-                    {loading ? <Loader2 className="animate-spin" size={16} /> : "Create Gallery"}
+                    {loading ? <Loader2 className="animate-spin" size={16} /> : "Crear Galería"}
                 </button>
             </form>
         </div>

@@ -11,7 +11,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
             <div style={{ width: '100%', maxWidth: '400px', marginBottom: '24px' }}>
                 <Link href={galleryId ? `/gallery/${galleryId}` : "/"} className="btn-link" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8eaed' }}>
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>Volver</span>
                 </Link>
             </div>
             <CreateAlbumForm />

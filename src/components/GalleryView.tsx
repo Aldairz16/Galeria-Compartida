@@ -13,6 +13,7 @@ interface Album {
     title: string
     cover_url: string
     created_at: string
+    album_date?: string // New field for manual date
     external_link?: string
     gallery_id?: string
 }
@@ -73,11 +74,15 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
 
         // 2. Sort
         result.sort((a, b) => {
+            // Use album_date if available, otherwise created_at
+            const dateA = a.album_date ? new Date(a.album_date).getTime() : new Date(a.created_at).getTime()
+            const dateB = b.album_date ? new Date(b.album_date).getTime() : new Date(b.created_at).getTime()
+
             switch (sortBy) {
                 case 'date_desc':
-                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                    return dateB - dateA
                 case 'date_asc':
-                    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                    return dateA - dateB
                 case 'name_asc':
                     return a.title.localeCompare(b.title)
                 case 'name_desc':
@@ -95,10 +100,19 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
         const groups: { [key: string]: Album[] } = {}
 
         processedAlbums.forEach(album => {
-            const date = new Date(album.created_at)
-            const key = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+            // Use album_date for grouping if available
+            const date = album.album_date ? new Date(album.album_date) : new Date(album.created_at)
+            // Helper for Spanish Month
+            const months = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ]
+            const monthName = months[date.getMonth()]
+            const year = date.getFullYear()
+            const key = `${monthName} ${year}`
+
             if (!groups[key]) groups[key] = []
-            groups[key] = []
+            groups[key].push(album)
         })
 
         return groups
@@ -144,7 +158,7 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                                             transition: 'color 0.2s, background-color 0.2s',
                                             cursor: 'pointer'
                                         }}
-                                        title="Edit Title"
+                                        title="Editar Título"
                                     >
                                         <Edit2 size={18} />
                                     </button>
@@ -159,7 +173,7 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                                 <ShareButton galleryId={gallery.id} initialIsPublic={gallery.is_public} />
                                 <Link href={`/create?galleryId=${gallery.id}`} className="btn btn-primary" style={{ height: '32px' }}>
                                     <Plus size={16} style={{ marginRight: '4px' }} />
-                                    <span>Add Album</span>
+                                    <span>Nuevo Álbum</span>
                                 </Link>
                             </>
                         )}
@@ -174,7 +188,7 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search albums..."
+                            placeholder="Buscar álbumes..."
                             className="input"
                             style={{ paddingLeft: '36px', height: '36px' }}
                         />
@@ -187,7 +201,7 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                             className="btn"
                             style={{ height: '36px', backgroundColor: '#252525', border: '1px solid #333', paddingRight: '8px' }}
                         >
-                            <span style={{ marginRight: '4px' }}>Sort by</span>
+                            <span style={{ marginRight: '4px' }}>Ordenar por</span>
                             <ChevronDown size={14} />
                         </button>
                         {showSortMenu && (
@@ -195,13 +209,13 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                                 <div style={{
                                     position: 'absolute', top: '100%', right: 0, marginTop: '4px',
                                     backgroundColor: '#252525', border: '1px solid #333', borderRadius: '4px',
-                                    zIndex: 50, width: '160px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                                    zIndex: 50, width: '180px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                                 }}>
                                     {[
-                                        { label: 'Date (Newest)', value: 'date_desc' },
-                                        { label: 'Date (Oldest)', value: 'date_asc' },
-                                        { label: 'Name (A-Z)', value: 'name_asc' },
-                                        { label: 'Name (Z-A)', value: 'name_desc' },
+                                        { label: 'Fecha (Reciente)', value: 'date_desc' },
+                                        { label: 'Fecha (Antigua)', value: 'date_asc' },
+                                        { label: 'Nombre (A-Z)', value: 'name_asc' },
+                                        { label: 'Nombre (Z-A)', value: 'name_desc' },
                                     ].map(opt => (
                                         <button
                                             key={opt.value}
@@ -236,7 +250,8 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                                 <div style={{ height: '1px', flex: 1, backgroundColor: '#333' }} />
                             </div>
 
-                            <div className="gallery-grid">
+                            {/* Bug Fix: Ensure this container has width/height and items are visible */}
+                            <div className="gallery-grid" style={{ minHeight: '100px' }}>
                                 {groupAlbums.map((album) => (
                                     <AlbumCard key={album.id} album={album} isOwner={isOwner} />
                                 ))}
@@ -245,10 +260,10 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                     ))
                 ) : (
                     <div style={{ textAlign: 'center', padding: '64px 0', opacity: 0.6 }}>
-                        {searchQuery ? <p>No albums found matching "{searchQuery}"</p> : <p>No albums in this gallery.</p>}
+                        {searchQuery ? <p>No se encontraron álbumes "{searchQuery}"</p> : <p>No hay álbumes en esta galería.</p>}
                         {isOwner && !searchQuery && (
                             <Link href={`/create?galleryId=${gallery.id}`} style={{ color: 'var(--primary)', marginTop: '8px', display: 'inline-block' }}>
-                                Create album
+                                Crear Álbum
                             </Link>
                         )}
                     </div>

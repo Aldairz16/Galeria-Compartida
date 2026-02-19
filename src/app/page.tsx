@@ -44,11 +44,11 @@ export default async function Home() {
                         letterSpacing: '0.05em',
                         paddingLeft: '2px'
                     }}>
-                        My Galleries
+                        Mis Galerías
                     </h2>
                     <Link href="/create-gallery" className="btn btn-primary" style={{ height: '28px', fontSize: '13px' }}>
                         <Plus size={14} style={{ marginRight: '4px' }} />
-                        <span>New Gallery</span>
+                        <span>Nueva Galería</span>
                     </Link>
                 </div>
 
@@ -73,7 +73,7 @@ export default async function Home() {
                                         <h3 style={{ fontSize: '15px', fontWeight: 500 }}>{gallery.title}</h3>
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#999', marginTop: 'auto' }}>
-                                        {gallery.albums?.[0]?.count || 0} albums
+                                        {gallery.albums?.[0]?.count || 0} álbumes
                                     </div>
                                 </div>
                             </Link>
@@ -91,9 +91,9 @@ export default async function Home() {
                         <div style={{ marginBottom: '16px' }}>
                             <Folder size={48} className="text-gray-500" />
                         </div>
-                        <p style={{ marginBottom: '16px', fontSize: '14px' }}>No galleries yet</p>
+                        <p style={{ marginBottom: '16px', fontSize: '14px' }}>No tienes galerías</p>
                         <Link href="/create-gallery" className="btn btn-primary">
-                            Create Gallery
+                            Crear Galería
                         </Link>
                     </div>
                 )}

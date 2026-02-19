@@ -1,34 +1,100 @@
 "use client"
 
-import { useState, useEffect } from "react" // Added useEffect
+import { useState, useRef } from "react"
 import { createClient } from "@/utils/supabase/client"
-import { useRouter, useSearchParams } from "next/navigation" // Added useSearchParams
-import { Upload, X, Loader2 } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Upload, X, Loader2, Calendar } from "lucide-react"
 
 export default function CreateAlbumForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const galleryId = searchParams.get("galleryId") // Get galleryId from URL
+    const galleryId = searchParams.get("galleryId")
 
     const supabase = createClient()
     const [loading, setLoading] = useState(false)
     const [title, setTitle] = useState("")
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]) // Default to today
     const [externalLink, setExternalLink] = useState("")
-    const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+    // Image & Cropping State
+    const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null)
+    const [imageSrc, setImageSrc] = useState<string | null>(null)
+    const [zoom, setZoom] = useState(1)
+    const [offset, setOffset] = useState({ x: 0, y: 0 })
+    const [isDragging, setIsDragging] = useState(false)
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+
+    const containerRef = useRef<HTMLDivElement>(null)
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0]
-            setFile(selectedFile)
-            setPreviewUrl(URL.createObjectURL(selectedFile))
+            const file = e.target.files[0]
+            const url = URL.createObjectURL(file)
+            setImageSrc(url)
+
+            // Reset crop state
+            setZoom(1)
+            setOffset({ x: 0, y: 0 })
+
+            const img = new Image()
+            img.src = url
+            img.onload = () => setOriginalImage(img)
         }
     }
 
-    const removeFile = () => {
-        setFile(null)
-        setPreviewUrl(null)
+    // Simple Drag Logic for cropping
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true)
+        setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y })
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging) return
+        setOffset({
+            x: e.clientX - dragStart.x,
+            y: e.clientY - dragStart.y
+        })
+    }
+
+    const handleMouseUp = () => setIsDragging(false)
+    const handleMouseLeave = () => setIsDragging(false)
+
+    // Crop Processing
+    const getCroppedImageBlob = async (): Promise<Blob | null> => {
+        if (!originalImage || !containerRef.current) return null
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return null
+
+        // 16:9 Aspect Ratio Output (e.g., 1280x720)
+        canvas.width = 1280
+        canvas.height = 720
+
+        // Clear
+        ctx.fillStyle = '#000'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // Draw logic mostly matches CSS transform 
+        // We need to map the CSS visual representation to the Canvas 
+        // This is a simplified approximation
+
+        const container = containerRef.current
+        const scaleX = canvas.width / container.clientWidth
+        const scaleY = canvas.height / container.clientHeight
+
+        // Use the larger scale to cover
+        const scale = Math.max(scaleX, scaleY) * zoom
+
+        const x = (canvas.width / 2) - (originalImage.width * scale / 2) + (offset.x * (canvas.width / container.clientWidth))
+        const y = (canvas.height / 2) - (originalImage.height * scale / 2) + (offset.y * (canvas.height / container.clientHeight))
+
+        ctx.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale)
+
+        return new Promise(resolve => {
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.9)
+        })
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -36,36 +102,40 @@ export default function CreateAlbumForm() {
         setLoading(true)
         setError(null)
 
-        if (!file || !title) {
-            setError("Please provide both a title and a cover image.")
+        if (!imageSrc || !title) {
+            setError("Por favor escribe un título y selecciona una imagen.")
             setLoading(false)
             return
         }
 
         if (!galleryId) {
-            setError("No gallery selected. Please go back to a gallery and try again.")
+            setError("No se seleccionó ninguna galería. Vuelve atrás e intenta de nuevo.")
             setLoading(false)
             return
         }
 
         try {
             const { data: { user } } = await supabase.auth.getUser()
-            if (!user) throw new Error("User not authenticated")
+            if (!user) throw new Error("Usuario no autenticado")
 
-            const fileExt = file.name.split(".").pop()
-            const fileName = `${user.id}/${Math.random()}.${fileExt}`
-            const filePath = `${fileName}`
+            // Process Image
+            const croppedBlob = await getCroppedImageBlob()
+            if (!croppedBlob) throw new Error("Error al procesar la imagen")
 
+            const fileName = `${user.id}/${Date.now()}.jpg`
+
+            // Upload to Supabase
             const { error: uploadError } = await supabase.storage
                 .from("covers")
-                .upload(filePath, file)
+                .upload(fileName, croppedBlob)
 
             if (uploadError) throw uploadError
 
             const { data: { publicUrl } } = supabase.storage
                 .from("covers")
-                .getPublicUrl(filePath)
+                .getPublicUrl(fileName)
 
+            // Insert Album
             const { error: insertError } = await supabase
                 .from("albums")
                 .insert([
@@ -74,21 +144,19 @@ export default function CreateAlbumForm() {
                         external_link: externalLink || null,
                         cover_url: publicUrl,
                         user_id: user.id,
-                        gallery_id: galleryId // Associate with gallery
+                        gallery_id: galleryId,
+                        album_date: date
                     },
                 ])
 
             if (insertError) throw insertError
 
-            router.push(`/gallery/${galleryId}`) // Redirect back to gallery
+            router.push(`/gallery/${galleryId}`)
             router.refresh()
         } catch (err: unknown) {
             console.error(err)
-            if (err instanceof Error) {
-                setError(err.message)
-            } else {
-                setError("Something went wrong")
-            }
+            const msg = err instanceof Error ? err.message : "Algo salió mal"
+            setError(msg)
         } finally {
             setLoading(false)
         }
@@ -96,17 +164,14 @@ export default function CreateAlbumForm() {
 
     return (
         <form onSubmit={handleSubmit} className="login-card">
-            <h2 className="login-title" style={{ fontSize: '1.5rem', marginBottom: '24px' }}>New Album</h2>
+            <h2 className="login-title" style={{ fontSize: '1.5rem', marginBottom: '24px' }}>Nuevo Álbum</h2>
 
-            {error && (
-                <div className="message message-error">
-                    {error}
-                </div>
-            )}
+            {error && <div className="message message-error">{error}</div>}
 
+            {/* Image Preview / Cropper */}
             <div className="form-group">
-                <label className="label">Cover Image</label>
-                {!previewUrl ? (
+                <label className="label">Portada (Arrastra para ajustar)</label>
+                {!imageSrc ? (
                     <div style={{ border: '2px dashed #5f6368', borderRadius: '8px', padding: '32px', textAlign: 'center', cursor: 'pointer', position: 'relative' }}>
                         <input
                             type="file"
@@ -116,36 +181,98 @@ export default function CreateAlbumForm() {
                         />
                         <div className="flex-center" style={{ flexDirection: 'column', color: '#9aa0a6' }}>
                             <Upload size={24} />
-                            <span>Click to upload cover</span>
+                            <span>Click para subir imagen</span>
                         </div>
                     </div>
                 ) : (
-                    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', height: '192px' }}>
-                        <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button
-                            type="button"
-                            onClick={removeFile}
-                            style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', color: 'white', padding: '4px', cursor: 'pointer' }}
+                    <div style={{ width: '100%' }}>
+                        <div
+                            ref={containerRef}
+                            style={{
+                                position: 'relative',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                aspectRatio: '16/9',
+                                backgroundColor: '#000',
+                                cursor: isDragging ? 'grabbing' : 'grab',
+                                touchAction: 'none'
+                            }}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseLeave}
                         >
-                            <X size={16} />
-                        </button>
+                            <img
+                                src={imageSrc}
+                                alt="Preview"
+                                draggable={false}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                                    transition: isDragging ? 'none' : 'transform 0.1s',
+                                    userSelect: 'none',
+                                    pointerEvents: 'none'
+                                }}
+                            />
+
+                            {/* Overlay Guidelines */}
+                            <div style={{ position: 'absolute', inset: 0, border: '1px solid rgba(255,255,255,0.2)', pointerEvents: 'none' }} />
+                        </div>
+
+                        {/* Zoom Control */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                            <span style={{ fontSize: '12px', color: '#999' }}>Zoom:</span>
+                            <input
+                                type="range"
+                                min="1"
+                                max="3"
+                                step="0.1"
+                                value={zoom}
+                                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                                style={{ flex: 1 }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => { setImageSrc(null); setOriginalImage(null); }}
+                                style={{ color: '#ff4d4f', border: 'none', background: 'none', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                                Cambiar
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
             <div className="form-group">
-                <label className="label">Album Title</label>
+                <label className="label">Título</label>
                 <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="My Amazing Trip"
+                    placeholder="Ej. Viaje a Cancún"
                     className="input"
                     required
                 />
             </div>
 
             <div className="form-group">
-                <label className="label">External Link (Optional)</label>
+                <label className="label">Fecha</label>
+                <div style={{ position: 'relative' }}>
+                    <Calendar size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="input"
+                        style={{ paddingLeft: '36px', colorScheme: 'dark' }}
+                        required
+                    />
+                </div>
+            </div>
+
+            <div className="form-group">
+                <label className="label">Link Externo (Opcional)</label>
                 <input
                     value={externalLink}
                     onChange={(e) => setExternalLink(e.target.value)}
@@ -154,7 +281,7 @@ export default function CreateAlbumForm() {
                     type="url"
                 />
                 <p style={{ fontSize: '0.75rem', color: '#9aa0a6', marginTop: '4px' }}>
-                    Link to where the full album is hosted
+                    Link donde está el álbum completo
                 </p>
             </div>
 
@@ -162,10 +289,10 @@ export default function CreateAlbumForm() {
                 {loading ? (
                     <div className="flex-center">
                         <Loader2 className="animate-spin" size={20} />
-                        <span>Creating...</span>
+                        <span>Creando...</span>
                     </div>
                 ) : (
-                    "Create Album"
+                    "Crear Álbum"
                 )}
             </button>
         </form>

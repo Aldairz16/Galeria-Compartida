@@ -9,6 +9,8 @@ interface Album {
     id: string
     title: string
     external_link?: string
+    album_date?: string
+    created_at?: string
 }
 
 export default function EditAlbumDialog({ album, onClose }: { album: Album, onClose: () => void }) {
@@ -16,6 +18,7 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
     const supabase = createClient()
     const [loading, setLoading] = useState(false)
     const [title, setTitle] = useState(album.title)
+    const [date, setDate] = useState(album.album_date || (album.created_at ? new Date(album.created_at).toISOString().split('T')[0] : ''))
     const [externalLink, setExternalLink] = useState(album.external_link || "")
 
     const handleSave = async (e: React.FormEvent) => {
@@ -26,7 +29,8 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
             .from('albums')
             .update({
                 title,
-                external_link: externalLink || null
+                external_link: externalLink || null,
+                album_date: date || null
             })
             .eq('id', album.id)
 
@@ -36,7 +40,7 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
             router.refresh()
             onClose()
         } else {
-            alert('Error updating album')
+            alert('Error al actualizar el álbum')
         }
     }
 
@@ -47,11 +51,11 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
                     <X size={20} />
                 </button>
 
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 600 }}>Edit Album</h2>
+                <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 600 }}>Editar Álbum</h2>
 
                 <form onSubmit={handleSave}>
                     <div className="form-group">
-                        <label className="label">Title</label>
+                        <label className="label">Título</label>
                         <input
                             className="input"
                             value={title}
@@ -59,8 +63,20 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
                             required
                         />
                     </div>
+
                     <div className="form-group">
-                        <label className="label">External Link</label>
+                        <label className="label">Fecha</label>
+                        <input
+                            className="input"
+                            type="date"
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
+                            style={{ colorScheme: 'dark' }}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="label">Link Externo</label>
                         <input
                             className="input"
                             value={externalLink}
@@ -71,10 +87,10 @@ export default function EditAlbumDialog({ album, onClose }: { album: Album, onCl
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
                         <button type="button" onClick={onClose} className="btn" style={{ backgroundColor: 'transparent', border: '1px solid #333' }}>
-                            Cancel
+                            Cancelar
                         </button>
                         <button type="submit" disabled={loading} className="btn btn-primary">
-                            {loading ? <Loader2 className="animate-spin" size={16} /> : "Save Changes"}
+                            {loading ? <Loader2 className="animate-spin" size={16} /> : "Guardar"}
                         </button>
                     </div>
                 </form>

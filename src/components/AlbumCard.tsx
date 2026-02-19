@@ -1,6 +1,6 @@
 
 import Link from "next/link"
-import { MoreVertical, Edit2, Trash2, ExternalLink } from "lucide-react"
+import { MoreVertical, Edit2, Trash2, ExternalLink, Calendar } from "lucide-react"
 import { useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
@@ -11,6 +11,8 @@ interface Album {
     title: string
     cover_url: string
     external_link?: string
+    album_date?: string
+    created_at?: string
 }
 
 export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: boolean }) {
@@ -23,7 +25,7 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
     const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!confirm("Are you sure you want to delete this album? This cannot be undone.")) return
+        if (!confirm("¿Estás seguro de que quieres eliminar este álbum? No se puede deshacer.")) return
 
         setIsDeleting(true)
         const { error } = await supabase.from('albums').delete().eq('id', album.id)
@@ -31,10 +33,16 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
         if (!error) {
             router.refresh()
         } else {
-            alert("Error deleting album")
+            alert("Error al eliminar")
             setIsDeleting(false)
         }
     }
+
+    // Format Date
+    const dateStr = album.album_date || album.created_at
+    const formattedDate = dateStr
+        ? new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+        : ''
 
     // Logic to determine Link behavior
     const hasExternalLink = !!album.external_link
@@ -93,20 +101,29 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
                     </div>
 
                     {/* Content Container */}
-                    <div style={{ padding: '8px 10px 10px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 style={{
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            color: 'var(--foreground)',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            marginBottom: '2px',
-                            flex: 1
-                        }}>
-                            {album.title}
-                        </h3>
-                        {hasExternalLink && <ExternalLink size={12} style={{ color: '#666', minWidth: '12px' }} />}
+                    <div style={{ padding: '8px 10px 10px 10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                color: 'var(--foreground)',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                marginBottom: '2px',
+                                flex: 1
+                            }}>
+                                {album.title}
+                            </h3>
+                            {hasExternalLink && <ExternalLink size={12} style={{ color: '#666', minWidth: '12px' }} />}
+                        </div>
+
+                        {/* Date Display */}
+                        {formattedDate && (
+                            <div style={{ fontSize: '11px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                <span style={{ textTransform: 'capitalize' }}>{formattedDate}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardWrapper>
@@ -144,14 +161,14 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px', border: 'none', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '13px', textAlign: 'left' }}
                                     className="hover:bg-[#333]"
                                 >
-                                    <Edit2 size={14} /> Edit
+                                    <Edit2 size={14} /> Editar
                                 </button>
                                 <button
                                     onClick={handleDelete}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px', border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', fontSize: '13px', textAlign: 'left' }}
                                     className="hover:bg-[#333]"
                                 >
-                                    <Trash2 size={14} /> Delete
+                                    <Trash2 size={14} /> Eliminar
                                 </button>
                             </div>
                             <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); }} style={{ position: 'fixed', inset: 0, zIndex: 15 }} />

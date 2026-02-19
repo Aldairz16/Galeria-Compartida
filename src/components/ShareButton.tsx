@@ -42,7 +42,7 @@ export default function ShareButton({ galleryId, initialIsPublic }: { galleryId:
                 }}
             >
                 {isPublic ? <Globe size={14} style={{ marginRight: '6px' }} /> : <Share2 size={14} style={{ marginRight: '6px' }} />}
-                <span>Share</span>
+                <span>Compartir</span>
             </button>
 
             {showMenu && (
@@ -64,8 +64,8 @@ export default function ShareButton({ galleryId, initialIsPublic }: { galleryId:
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {loading ? <Loader2 size={16} className="animate-spin" /> : (isPublic ? <Globe size={16} color="#27ae60" /> : <Lock size={16} color="#999" />)}
                                 <div style={{ fontSize: '13px' }}>
-                                    <div style={{ fontWeight: 500 }}>{isPublic ? 'Public Access' : 'Private'}</div>
-                                    <div style={{ fontSize: '11px', color: '#888' }}>{isPublic ? 'Anyone with link can view' : 'Only you can view'}</div>
+                                    <div style={{ fontWeight: 500 }}>{isPublic ? 'Acceso Público' : 'Privado'}</div>
+                                    <div style={{ fontSize: '11px', color: '#888' }}>{isPublic ? 'Cualquiera con el link puede ver' : 'Solo tú puedes ver'}</div>
                                 </div>
                             </div>
                             <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '32px', height: '18px' }}>
@@ -102,7 +102,7 @@ export default function ShareButton({ galleryId, initialIsPublic }: { galleryId:
                                     className="btn btn-full"
                                     style={{ backgroundColor: copied ? '#27ae60' : '#333', color: 'white', fontSize: '12px' }}
                                 >
-                                    {copied ? <><Check size={14} style={{ marginRight: '6px' }} /> Copied!</> : 'Copy Link'}
+                                    {copied ? <><Check size={14} style={{ marginRight: '6px' }} /> Copiado!</> : 'Copiar Link'}
                                 </button>
                             </div>
                         )}
