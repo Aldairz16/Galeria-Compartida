@@ -78,7 +78,7 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
             <div
                 style={{
                     borderRadius: '3px', /* Notion radius */
-                    overflow: 'hidden',
+                    // overflow: 'hidden', /* REMOVED to allow menu to pop out */
                     backgroundColor: '#252525',
                     transition: 'background-color 0.2s',
                     boxShadow: 'rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 2px 4px',
@@ -91,7 +91,16 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
             >
                 {/* Image Container - Clickable */}
                 <CardLink className="block" >
-                    <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', backgroundColor: '#202020', position: 'relative' }}>
+                    <div style={{
+                        width: '100%',
+                        aspectRatio: '16/9',
+                        overflow: 'hidden',
+                        backgroundColor: '#202020',
+                        position: 'relative',
+                        // Restore radius manually since parent overflow is visible
+                        borderTopLeftRadius: '3px',
+                        borderTopRightRadius: '3px'
+                    }}>
                         <img
                             src={album.cover_url}
                             alt={album.title}
@@ -164,7 +173,7 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
                                                 position: 'absolute', top: '100%', right: 0, marginTop: '4px',
                                                 backgroundColor: '#252525', border: '1px solid #333', borderRadius: '4px',
                                                 padding: '4px', width: '120px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                                                zIndex: 50
+                                                zIndex: 100 // Increased zIndex
                                             }}>
                                                 <button
                                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowEditDialog(true); setShowMenu(false); }}
@@ -182,7 +191,7 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
                                                 </button>
                                             </div>
                                             {/* Backdrop */}
-                                            <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); }} style={{ position: 'fixed', inset: 0, zIndex: 40, cursor: 'default' }} />
+                                            <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowMenu(false); }} style={{ position: 'fixed', inset: 0, zIndex: 90, cursor: 'default' }} />
                                         </>
                                     )}
                                 </div>
