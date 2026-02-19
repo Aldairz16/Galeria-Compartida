@@ -1,18 +1,26 @@
 :root {
-  --background: #202124;
-  --surface: #292a2d;
-  /* Slightly lighter for cards */
-  --foreground: #e8eaed;
-  --primary: #8ab4f8;
-  --primary-hover: #aecbfa;
-  --border: #5f6368;
-  --error: #f28b82;
-  --success: #81c995;
-  --radius: 8px;
-  --font-sans: 'Google Sans', Roboto, Arial, sans-serif;
+  --background: #191919;
+  /* Notion Dark Mode Background */
+  --surface: #202020;
+  /* Slightly lighter for cards/hovers */
+  --foreground: #ffffff;
+  --primary: #2eaadc;
+  /* Notion Blue */
+  --primary-hover: #268db5;
+  --border: #333333;
+  --error: #eb5757;
+  --success: #27ae60;
+  --radius: 3px;
+  /* Notion uses smaller radius */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
+
+  /* Grid Variables */
+  --card-min-width: 260px;
+  /* Notion "Medium" size approx */
+  --card-gap: 16px;
 }
 
 * {
@@ -35,9 +43,79 @@ a {
   text-decoration: none;
 }
 
+/* --- Layout --- */
+
+.app-header {
+  height: 48px;
+  /* Tighter header like Notion */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background-color: var(--background);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-size: 14px;
+}
+
+.logo {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo span {
+  font-weight: 600;
+}
+
+.main-content {
+  padding: 24px 96px;
+  /* Similar to Notion page padding */
+  width: 100%;
+  max-width: 1400px;
+  /* Max width for readable content */
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 24px 48px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 16px 16px;
+  }
+}
+
+/* --- Notion-Style Grid --- */
+.gallery-grid {
+  display: grid;
+  /* Notion-style responsiveness: fill with items of min 260px width */
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+  gap: var(--card-gap);
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .gallery-grid {
+    /* Double column on mobile, allowing smaller cards */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  :root {
+    --card-min-width: 140px;
+    /* Allow smaller cards on mobile */
+  }
+}
+
 /* --- Components --- */
 
-/* 1. Login Page */
+/* Login Helpers */
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -47,75 +125,80 @@ a {
 }
 
 .login-card {
-  background-color: var(--surface);
+  background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 40px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .login-title {
   text-align: center;
-  font-size: 1.75rem;
-  margin-bottom: 32px;
-  color: var(--foreground);
+  font-size: 1.5rem;
+  /* Smaller, cleaner title */
+  font-weight: 600;
+  margin-bottom: 24px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .label {
-  font-size: 0.875rem;
-  color: #bdc1c6;
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .input {
   width: 100%;
-  padding: 12px;
-  border-radius: 4px;
-  background-color: var(--background);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background-color: #252525;
   border: 1px solid var(--border);
   color: white;
-  font-size: 1rem;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  border-width: 2px;
-  padding: 11px;
-  /* Compensate for border */
+  background-color: #2a2a2a;
+  box-shadow: 0 0 0 2px rgba(46, 170, 220, 0.2);
 }
 
-/* 2. Buttons */
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 24px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
   font-weight: 500;
   cursor: pointer;
   border: none;
-  font-size: 0.875rem;
+  font-size: 14px;
   transition: background-color 0.2s;
-  width: auto;
+  height: 32px;
+  user-select: none;
 }
 
 .btn-full {
   width: 100%;
+  height: 36px;
 }
 
 .btn-primary {
   background-color: var(--primary);
-  color: #202124;
-  font-weight: 600;
+  color: white;
 }
 
 .btn-primary:hover {
@@ -124,16 +207,38 @@ a {
 
 .btn-link {
   background: none;
-  color: var(--primary);
+  color: #aaa;
   padding: 0;
-  text-decoration: none;
+  font-size: 13px;
 }
 
 .btn-link:hover {
   text-decoration: underline;
+  color: #fff;
 }
 
-/* 3. Helper Classes */
+/* Messages */
+.message {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.message-error {
+  background-color: rgba(235, 87, 87, 0.1);
+  color: var(--error);
+  border-color: rgba(235, 87, 87, 0.2);
+}
+
+.message-success {
+  background-color: rgba(39, 174, 96, 0.1);
+  color: var(--success);
+  border-color: rgba(39, 174, 96, 0.2);
+}
+
+/* Utilities */
 .text-center {
   text-align: center;
 }
@@ -142,96 +247,9 @@ a {
   margin-top: 16px;
 }
 
-.text-sm {
-  font-size: 0.875rem;
-}
-
-.text-gray {
-  color: #9aa0a6;
-}
-
 .flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-/* 4. Messages */
-.message {
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  font-size: 0.875rem;
-  border: 1px solid transparent;
-}
-
-.message-error {
-  bg-color: rgba(242, 139, 130, 0.1);
-  color: var(--error);
-  border-color: var(--error);
-}
-
-.message-success {
-  bg-color: rgba(129, 201, 149, 0.1);
-  color: var(--success);
-  border-color: var(--success);
-}
-
-/* 5. Home Layout */
-.app-header {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--border);
-  background-color: var(--surface);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.logo {
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-
-.logo span {
-  color: var(--primary);
-  font-weight: 700;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.main-content {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 24px;
-}
-
-@media (max-width: 600px) {
-  .photo-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .app-header {
-    padding: 0 16px;
-  }
-
-  .main-content {
-    padding: 16px;
-  }
 }

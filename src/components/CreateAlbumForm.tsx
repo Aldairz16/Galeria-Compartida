@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Added useEffect
 import { createClient } from "@/utils/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation" // Added useSearchParams
 import { Upload, X, Loader2 } from "lucide-react"
 
 export default function CreateAlbumForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const galleryId = searchParams.get("galleryId") // Get galleryId from URL
+
     const supabase = createClient()
     const [loading, setLoading] = useState(false)
     const [title, setTitle] = useState("")
@@ -39,12 +42,18 @@ export default function CreateAlbumForm() {
             return
         }
 
+        if (!galleryId) {
+            setError("No gallery selected. Please go back to a gallery and try again.")
+            setLoading(false)
+            return
+        }
+
         try {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error("User not authenticated")
 
             const fileExt = file.name.split(".").pop()
-            const fileName = `${user.id}/${Math.random()}.${fileExt}` // Organize by user ID
+            const fileName = `${user.id}/${Math.random()}.${fileExt}`
             const filePath = `${fileName}`
 
             const { error: uploadError } = await supabase.storage
@@ -64,13 +73,14 @@ export default function CreateAlbumForm() {
                         title,
                         external_link: externalLink || null,
                         cover_url: publicUrl,
-                        user_id: user.id
+                        user_id: user.id,
+                        gallery_id: galleryId // Associate with gallery
                     },
                 ])
 
             if (insertError) throw insertError
 
-            router.push("/")
+            router.push(`/gallery/${galleryId}`) // Redirect back to gallery
             router.refresh()
         } catch (err: unknown) {
             console.error(err)

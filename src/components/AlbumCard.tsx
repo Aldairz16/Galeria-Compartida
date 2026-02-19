@@ -1,6 +1,5 @@
 
 import Link from "next/link"
-import { ExternalLink } from "lucide-react"
 
 interface Album {
     id: string
@@ -11,16 +10,48 @@ interface Album {
 
 export default function AlbumCard({ album }: { album: Album }) {
     return (
-        <Link href={`/album/${album.id}`} className="group block relative aspect-square rounded-lg overflow-hidden bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <img
-                src={album.cover_url}
-                alt={album.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:brightness-90"
-            />
+        <Link href={`/album/${album.id}`} className="group block" style={{ textDecoration: 'none' }}>
+            <div
+                style={{
+                    borderRadius: '3px', /* Notion radius */
+                    overflow: 'hidden',
+                    position: 'relative',
+                    backgroundColor: '#252525',
+                    transition: 'background-color 0.2s',
+                    /* Notion Card Shadow */
+                    boxShadow: 'rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 2px 4px',
+                }}
+                className="hover:bg-[#2a2a2a]"
+            >
+                {/* Image Container - Aspect Ratio 16:9 for cover fit */}
+                <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', backgroundColor: '#202020' }}>
+                    <img
+                        src={album.cover_url}
+                        alt={album.title}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center',
+                            transition: 'transform 0.4s ease',
+                        }}
+                    />
+                </div>
 
-            {/* Overlay Gradient - only visible on hover or focus mainly, but we keep title always visible for usability */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8 opacity-100 transition-opacity">
-                <h3 className="text-sm font-medium text-white truncate">{album.title}</h3>
+                {/* Content Container */}
+                <div style={{ padding: '8px 10px 10px 10px' }}>
+                    <h3 style={{
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: 'var(--foreground)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        marginBottom: '2px'
+                    }}>
+                        {album.title}
+                    </h3>
+                </div>
             </div>
         </Link>
     )

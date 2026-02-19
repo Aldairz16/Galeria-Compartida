@@ -1,8 +1,7 @@
 
 import { createClient } from "@/utils/supabase/server"
-import AlbumCard from "@/components/AlbumCard"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, Folder } from "lucide-react"
 import { redirect } from "next/navigation"
 import LogoutButton from "@/components/LogoutButton"
 
@@ -16,9 +15,10 @@ export default async function Home() {
         redirect("/login")
     }
 
-    const { data: albums } = await supabase
-        .from("albums")
-        .select("*")
+    // Fetch Galleries instead of albums
+    const { data: galleries } = await supabase
+        .from("galleries")
+        .select("*, albums(count)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
@@ -26,38 +26,74 @@ export default async function Home() {
         <>
             <header className="app-header">
                 <div className="logo">
-                    <span>Galeria</span> Photos
+                    <span>Galeria</span> Workspace
                 </div>
 
-                <div className="header-actions">
+                <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
                     <LogoutButton />
-                    <Link href="/create" className="btn btn-primary">
-                        <Plus size={18} style={{ marginRight: '4px' }} />
-                        <span>Create</span>
-                    </Link>
                 </div>
             </header>
 
             <main className="main-content">
-                <h2 className="label" style={{ marginBottom: '16px' }}>Albums</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <h2 style={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: '#999',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        paddingLeft: '2px'
+                    }}>
+                        My Galleries
+                    </h2>
+                    <Link href="/create-gallery" className="btn btn-primary" style={{ height: '28px', fontSize: '13px' }}>
+                        <Plus size={14} style={{ marginRight: '4px' }} />
+                        <span>New Gallery</span>
+                    </Link>
+                </div>
 
-                {albums && albums.length > 0 ? (
-                    <div className="photo-grid">
-                        {albums.map((album) => (
-                            <AlbumCard key={album.id} album={album} />
+                {galleries && galleries.length > 0 ? (
+                    <div className="gallery-grid">
+                        {galleries.map((gallery) => (
+                            <Link key={gallery.id} href={`/gallery/${gallery.id}`} style={{ textDecoration: 'none' }}>
+                                <div style={{
+                                    backgroundColor: '#252525',
+                                    borderRadius: '3px',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '12px',
+                                    boxShadow: 'rgba(15, 15, 15, 0.1) 0px 0px 0px 1px',
+                                    transition: 'background-color 0.2s',
+                                    height: '100%',
+                                    minHeight: '120px'
+                                }} className="hover:bg-[#2a2a2a]">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8eaed' }}>
+                                        <Folder size={18} fill="#e8eaed" fillOpacity={0.2} />
+                                        <h3 style={{ fontSize: '15px', fontWeight: 500 }}>{gallery.title}</h3>
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#999', marginTop: 'auto' }}>
+                                        {gallery.albums?.[0]?.count || 0} albums
+                                    </div>
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
-                    <div className="login-container" style={{ minHeight: '50vh', flexDirection: 'column' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#303134', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-                            <Plus size={32} color="#9aa0a6" />
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '64px 0',
+                        opacity: 0.6
+                    }}>
+                        <div style={{ marginBottom: '16px' }}>
+                            <Folder size={48} className="text-gray-500" />
                         </div>
-                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No albums yet</h3>
-                        <p className="text-gray" style={{ marginBottom: '24px' }}>
-                            Your private albums will appear here.
-                        </p>
-                        <Link href="/create" className="btn btn-primary">
-                            Create album
+                        <p style={{ marginBottom: '16px', fontSize: '14px' }}>No galleries yet</p>
+                        <Link href="/create-gallery" className="btn btn-primary">
+                            Create Gallery
                         </Link>
                     </div>
                 )}
