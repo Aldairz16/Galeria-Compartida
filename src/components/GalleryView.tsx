@@ -59,10 +59,6 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
         }
     }
 
-    // Handle Album Updates (passed to AlbumCard/Dialog)
-    // For now, we rely on router.refresh() from AlbumCard to update view, 
-    // but ideally we'd update local state too.
-
     // Filtering & Sorting
     const processedAlbums = useMemo(() => {
         let result = [...albums]
@@ -102,7 +98,7 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
             const date = new Date(album.created_at)
             const key = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
             if (!groups[key]) groups[key] = []
-            groups[key].push(album)
+            groups[key] = []
         })
 
         return groups
@@ -137,12 +133,20 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
                                 {isOwner && (
                                     <button
                                         onClick={() => setIsEditingTitle(true)}
-                                        className="btn-link"
-                                        style={{ opacity: 0, transition: 'opacity 0.2s' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                                        className="btn"
+                                        style={{
+                                            backgroundColor: 'transparent',
+                                            color: '#999',
+                                            border: '1px solid transparent',
+                                            padding: '6px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            transition: 'color 0.2s, background-color 0.2s',
+                                            cursor: 'pointer'
+                                        }}
+                                        title="Edit Title"
                                     >
-                                        <Edit2 size={16} />
+                                        <Edit2 size={18} />
                                     </button>
                                 )}
                             </div>
