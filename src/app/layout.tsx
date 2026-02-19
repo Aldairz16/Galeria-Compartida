@@ -6,8 +6,8 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-    title: "Galeria - Share Your Moments",
-    description: "Create and share beautiful photo album covers with links to your full collections.",
+    title: "Pixly",
+    description: "Comparte tus fotos en alta calidad con Pixly",
 }
 
 export default function RootLayout({

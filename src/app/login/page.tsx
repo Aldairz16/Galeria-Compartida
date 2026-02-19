@@ -53,6 +53,10 @@ export default function LoginPage() {
     return (
         <div className="login-container">
             <div className="login-card">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold mb-2">Pixly</h1>
+                    <p className="text-gray-400">Comparte tus momentos favoritos</p>
+                </div>
                 <h1 className="login-title">
                     {isSignUp ? "Create Account" : "Welcome Back"}
                 </h1>

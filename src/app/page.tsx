@@ -26,7 +26,7 @@ export default async function Home() {
         <>
             <header className="app-header">
                 <div className="logo">
-                    <span>Galeria</span> Workspace
+                    <span>Pixly</span> Workspace
                 </div>
 
                 <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
