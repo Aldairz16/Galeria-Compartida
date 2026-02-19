@@ -22,28 +22,23 @@ export default async function Home() {
         .order("created_at", { ascending: false })
 
     return (
-        <div className="min-h-screen pb-20">
-            {/* Top Bar */}
-            <header className="sticky top-0 z-30 bg-[#202124] flex items-center justify-between px-4 py-3 border-b border-[#5f6368]">
-                <div className="flex items-center gap-4">
-                    {/* Logo / Brand */}
-                    <div className="text-xl font-medium text-white flex items-center gap-2">
-                        <span className="text-blue-400 font-bold">Galeria</span> Photos
-                    </div>
+        <>
+            <header className="app-header">
+                <div className="logo">
+                    <span>Galeria</span> Photos
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="header-actions">
                     <LogoutButton />
-                    <Link href="/create" className="btn btn-primary btn-sm rounded-full px-4 ml-2">
-                        <Plus size={18} />
-                        <span className="hidden sm:inline">Create</span>
+                    <Link href="/create" className="btn btn-primary">
+                        <Plus size={18} style={{ marginRight: '4px' }} />
+                        <span>Create</span>
                     </Link>
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="container p-4">
-                <h2 className="text-sm font-medium text-gray-400 mb-4 px-1">Albums</h2>
+            <main className="main-content">
+                <h2 className="label" style={{ marginBottom: '16px' }}>Albums</h2>
 
                 {albums && albums.length > 0 ? (
                     <div className="photo-grid">
@@ -52,20 +47,20 @@ export default async function Home() {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-24 text-center">
-                        <div className="w-32 h-32 bg-[#303134] rounded-full flex items-center justify-center mb-6">
-                            <Plus size={48} className="text-[#9aa0a6]" />
+                    <div className="login-container" style={{ minHeight: '50vh', flexDirection: 'column' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#303134', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+                            <Plus size={32} color="#9aa0a6" />
                         </div>
-                        <h3 className="text-xl font-medium text-white mb-2">No albums yet</h3>
-                        <p className="text-[#9aa0a6] mb-8 max-w-sm">
-                            Your albums will appear here. Create one to get started!
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No albums yet</h3>
+                        <p className="text-gray" style={{ marginBottom: '24px' }}>
+                            Your private albums will appear here.
                         </p>
-                        <Link href="/create" className="btn btn-primary rounded-full">
+                        <Link href="/create" className="btn btn-primary">
                             Create album
                         </Link>
                     </div>
                 )}
             </main>
-        </div>
+        </>
     )
 }

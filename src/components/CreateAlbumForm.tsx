@@ -39,7 +39,6 @@ export default function CreateAlbumForm() {
         }
 
         try {
-            // 1. Upload file to Supabase Storage
             const fileExt = file.name.split(".").pop()
             const fileName = `${Math.random()}.${fileExt}`
             const filePath = `${fileName}`
@@ -50,12 +49,10 @@ export default function CreateAlbumForm() {
 
             if (uploadError) throw uploadError
 
-            // 2. Get public URL
             const { data: { publicUrl } } = supabase.storage
                 .from("covers")
                 .getPublicUrl(filePath)
 
-            // 3. Insert record into database
             const { error: insertError } = await supabase
                 .from("albums")
                 .insert([
@@ -83,37 +80,37 @@ export default function CreateAlbumForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="card p-6 max-w-md mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center">New Album</h2>
+        <form onSubmit={handleSubmit} className="login-card">
+            <h2 className="login-title" style={{ fontSize: '1.5rem', marginBottom: '24px' }}>New Album</h2>
 
             {error && (
-                <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded mb-4 text-sm">
+                <div className="message message-error">
                     {error}
                 </div>
             )}
 
-            <div className="input-group">
+            <div className="form-group">
                 <label className="label">Cover Image</label>
                 {!previewUrl ? (
-                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer relative">
+                    <div style={{ border: '2px dashed #5f6368', borderRadius: '8px', padding: '32px', textAlign: 'center', cursor: 'pointer', position: 'relative' }}>
                         <input
                             type="file"
                             accept="image/*"
                             onChange={handleFileChange}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                         />
-                        <div className="flex flex-col items-center gap-2 text-gray-500">
+                        <div className="flex-center" style={{ flexDirection: 'column', color: '#9aa0a6' }}>
                             <Upload size={24} />
                             <span>Click to upload cover</span>
                         </div>
                     </div>
                 ) : (
-                    <div className="relative rounded-lg overflow-hidden h-48 group">
-                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', height: '192px' }}>
+                        <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button
                             type="button"
                             onClick={removeFile}
-                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 p-1 rounded-full text-white transition-colors"
+                            style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', color: 'white', padding: '4px', cursor: 'pointer' }}
                         >
                             <X size={16} />
                         </button>
@@ -121,7 +118,7 @@ export default function CreateAlbumForm() {
                 )}
             </div>
 
-            <div className="input-group">
+            <div className="form-group">
                 <label className="label">Album Title</label>
                 <input
                     value={title}
@@ -132,7 +129,7 @@ export default function CreateAlbumForm() {
                 />
             </div>
 
-            <div className="input-group">
+            <div className="form-group">
                 <label className="label">External Link (Optional)</label>
                 <input
                     value={externalLink}
@@ -141,17 +138,17 @@ export default function CreateAlbumForm() {
                     className="input"
                     type="url"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                    Link to where the full album is hosted (e.g. Google Photos, Dropbox)
+                <p style={{ fontSize: '0.75rem', color: '#9aa0a6', marginTop: '4px' }}>
+                    Link to where the full album is hosted
                 </p>
             </div>
 
-            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-4">
+            <button type="submit" disabled={loading} className="btn btn-primary btn-full mt-4">
                 {loading ? (
-                    <>
+                    <div className="flex-center">
                         <Loader2 className="animate-spin" size={20} />
-                        Creating...
-                    </>
+                        <span>Creating...</span>
+                    </div>
                 ) : (
                     "Create Album"
                 )}

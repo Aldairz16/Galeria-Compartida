@@ -5,11 +5,11 @@ import { ArrowLeft } from "lucide-react"
 
 export default function CreatePage() {
     return (
-        <div className="min-h-screen p-8 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md mb-6">
-                <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+        <div className="login-container" style={{ padding: '0 16px', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '40px' }}>
+            <div style={{ width: '100%', maxWidth: '400px', marginBottom: '24px' }}>
+                <Link href="/" className="btn-link" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8eaed' }}>
                     <ArrowLeft size={20} />
-                    Back to Gallery
+                    <span>Back to Gallery</span>
                 </Link>
             </div>
             <CreateAlbumForm />

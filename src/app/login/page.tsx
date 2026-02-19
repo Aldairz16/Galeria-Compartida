@@ -23,6 +23,9 @@ export default function LoginPage() {
                 const { error } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    }
                 })
                 if (error) throw error
                 setMessage({ text: "Check your email for the confirmation link!", type: "success" })
@@ -47,20 +50,20 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="card w-full max-w-md p-8">
-                <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+        <div className="login-container">
+            <div className="login-card">
+                <h1 className="login-title">
                     {isSignUp ? "Create Account" : "Welcome Back"}
                 </h1>
 
-                <form onSubmit={handleAuth} className="space-y-4">
+                <form onSubmit={handleAuth}>
                     {message && (
-                        <div className={`p-3 rounded text-sm ${message.type === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500' : 'bg-green-500/10 text-green-500 border border-green-500'}`}>
+                        <div className={`message ${message.type === 'error' ? 'message-error' : 'message-success'}`}>
                             {message.text}
                         </div>
                     )}
 
-                    <div className="input-group">
+                    <div className="form-group">
                         <label className="label">Email</label>
                         <input
                             type="email"
@@ -68,10 +71,11 @@ export default function LoginPage() {
                             onChange={(e) => setEmail(e.target.value)}
                             className="input"
                             required
+                            placeholder="you@example.com"
                         />
                     </div>
 
-                    <div className="input-group">
+                    <div className="form-group">
                         <label className="label">Password</label>
                         <input
                             type="password"
@@ -80,24 +84,25 @@ export default function LoginPage() {
                             className="input"
                             required
                             minLength={6}
+                            placeholder="••••••••"
                         />
                     </div>
 
-                    <button type="submit" disabled={loading} className="btn btn-primary w-full">
+                    <button type="submit" disabled={loading} className="btn btn-primary btn-full mt-4">
                         {loading ? (
-                            <div className="flex items-center justify-center gap-2">
-                                <Loader2 className="animate-spin" size={20} />
-                                Processing...
+                            <div className="flex-center">
+                                <Loader2 className="animate-spin" size={18} />
+                                <span>Processing...</span>
                             </div>
                         ) : (isSignUp ? "Sign Up" : "Log In")}
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-400">
+                <div className="mt-4 text-center text-sm text-gray">
                     <span>{isSignUp ? "Already have an account?" : "Don't have an account?"}</span>{" "}
                     <button
                         onClick={() => setIsSignUp(!isSignUp)}
-                        className="text-blue-400 hover:text-blue-300 hover:underline ml-1"
+                        className="btn-link"
                     >
                         {isSignUp ? "Log In" : "Sign Up"}
                     </button>
