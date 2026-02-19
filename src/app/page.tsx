@@ -1,5 +1,5 @@
 
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@/utils/supabase/server"
 import AlbumCard from "@/components/AlbumCard"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -9,16 +9,17 @@ import LogoutButton from "@/components/LogoutButton"
 export const revalidate = 0
 
 export default async function Home() {
-    const { data: { session } } = await supabase.auth.getSession()
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (!user) {
         redirect("/login")
     }
 
     const { data: albums } = await supabase
         .from("albums")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
     return (

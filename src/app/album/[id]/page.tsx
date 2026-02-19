@@ -1,5 +1,5 @@
 
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@/utils/supabase/server"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink } from "lucide-react"
 import { notFound } from "next/navigation"
@@ -13,6 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params
+    const supabase = await createClient()
     const { data: album } = await supabase
         .from("albums")
         .select("title, cover_url")
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AlbumPage({ params }: Props) {
     const { id } = await params
+    const supabase = await createClient()
     const { data: album } = await supabase
         .from("albums")
         .select("*")

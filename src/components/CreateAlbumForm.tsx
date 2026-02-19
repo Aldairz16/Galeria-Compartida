@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
 import { Upload, X, Loader2 } from "lucide-react"
 
 export default function CreateAlbumForm() {
     const router = useRouter()
+    const supabase = createClient()
     const [loading, setLoading] = useState(false)
     const [title, setTitle] = useState("")
     const [externalLink, setExternalLink] = useState("")
@@ -39,8 +40,11 @@ export default function CreateAlbumForm() {
         }
 
         try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("User not authenticated")
+
             const fileExt = file.name.split(".").pop()
-            const fileName = `${Math.random()}.${fileExt}`
+            const fileName = `${user.id}/${Math.random()}.${fileExt}` // Organize by user ID
             const filePath = `${fileName}`
 
             const { error: uploadError } = await supabase.storage
@@ -60,6 +64,7 @@ export default function CreateAlbumForm() {
                         title,
                         external_link: externalLink || null,
                         cover_url: publicUrl,
+                        user_id: user.id
                     },
                 ])
 
