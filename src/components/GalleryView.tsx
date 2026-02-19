@@ -39,6 +39,12 @@ export default function GalleryView({ gallery, initialAlbums, isOwner }: Props) 
 
     // State
     const [albums, setAlbums] = useState(initialAlbums)
+
+    // Sync state with props when router.refresh() happens
+    useMemo(() => {
+        setAlbums(initialAlbums)
+    }, [initialAlbums])
+
     const [galleryTitle, setGalleryTitle] = useState(gallery.title)
     const [isEditingTitle, setIsEditingTitle] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
