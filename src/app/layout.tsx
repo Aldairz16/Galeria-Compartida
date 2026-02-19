@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     description: "Comparte tus fotos en alta calidad con Pixly",
     icons: {
         icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+        apple: "/favicon.ico",
     },
 }
 
