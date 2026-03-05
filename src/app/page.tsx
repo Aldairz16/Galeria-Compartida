@@ -56,32 +56,15 @@ export default async function Home() {
                     <div className="gallery-grid">
                         {galleries.map((gallery, index) => (
                             <Link key={gallery.id} href={`/gallery/${gallery.id}`} style={{ textDecoration: 'none' }}>
-                                <div style={{
-                                    backgroundColor: 'var(--surface)',
-                                    borderRadius: 'var(--radius)',
+                                <div className="gallery-card" style={{
                                     padding: '20px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: '12px',
-                                    boxShadow: 'var(--shadow-sm)',
-                                    border: '1px solid var(--border)',
-                                    transition: 'all 0.3s ease',
                                     height: '100%',
                                     minHeight: '130px',
-                                    cursor: 'pointer',
                                     animation: `fadeIn 0.4s ease-out ${index * 0.05}s both`
-                                }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(-3px)'
-                                        e.currentTarget.style.boxShadow = 'var(--shadow-hover)'
-                                        e.currentTarget.style.borderColor = 'var(--primary)'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(0)'
-                                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                                        e.currentTarget.style.borderColor = 'var(--border)'
-                                    }}
-                                >
+                                }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--foreground)' }}>
                                         <div style={{
                                             width: '36px', height: '36px',

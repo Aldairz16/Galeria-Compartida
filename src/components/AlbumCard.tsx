@@ -76,27 +76,13 @@ export default function AlbumCard({ album, isOwner }: { album: Album, isOwner?: 
     return (
         <>
             <div
+                className="album-card"
                 style={{
-                    borderRadius: 'var(--radius)',
-                    backgroundColor: 'var(--surface)',
-                    transition: 'all 0.3s ease',
-                    boxShadow: 'var(--shadow-sm)',
-                    border: '1px solid var(--border)',
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
                     overflow: 'visible'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow-hover)'
-                    e.currentTarget.style.borderColor = 'var(--primary)'
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
-                    e.currentTarget.style.borderColor = 'var(--border)'
                 }}
             >
                 {/* Image Container - Clickable */}
