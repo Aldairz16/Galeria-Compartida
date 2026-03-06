@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { createClient } from "@/utils/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Upload, X, Loader2, Calendar } from "lucide-react"
+import { getCroppedBlob } from "@/utils/cropImage"
 
 export default function CreateAlbumForm() {
     const router = useRouter()
@@ -45,53 +46,49 @@ export default function CreateAlbumForm() {
         }
     }
 
-    // Simple Drag Logic for cropping
-    const handleMouseDown = (e: React.MouseEvent) => {
+    // Drag Logic for cropping (mouse + touch)
+    const handlePointerDown = (clientX: number, clientY: number) => {
         setIsDragging(true)
-        setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y })
+        setDragStart({ x: clientX - offset.x, y: clientY - offset.y })
     }
 
-    const handleMouseMove = (e: React.MouseEvent) => {
+    const handlePointerMove = (clientX: number, clientY: number) => {
         if (!isDragging) return
         setOffset({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y
+            x: clientX - dragStart.x,
+            y: clientY - dragStart.y
         })
     }
 
-    const handleMouseUp = () => setIsDragging(false)
-    const handleMouseLeave = () => setIsDragging(false)
+    const handlePointerEnd = () => setIsDragging(false)
 
-    // Crop Processing
+    // Mouse handlers
+    const handleMouseDown = (e: React.MouseEvent) => handlePointerDown(e.clientX, e.clientY)
+    const handleMouseMove = (e: React.MouseEvent) => handlePointerMove(e.clientX, e.clientY)
+
+    // Touch handlers
+    const handleTouchStart = (e: React.TouchEvent) => {
+        e.preventDefault()
+        const t = e.touches[0]
+        handlePointerDown(t.clientX, t.clientY)
+    }
+    const handleTouchMove = (e: React.TouchEvent) => {
+        e.preventDefault()
+        const t = e.touches[0]
+        handlePointerMove(t.clientX, t.clientY)
+    }
+
+    // Crop Processing — uses shared utility
     const getCroppedImageBlob = async (): Promise<Blob | null> => {
         if (!originalImage || !containerRef.current) return null
-
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return null
-
-        // 16:9 Aspect Ratio Output (e.g., 1280x720)
-        canvas.width = 1280
-        canvas.height = 720
-
-        // Clear
-        ctx.fillStyle = '#000'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-
         const container = containerRef.current
-        const scaleX = canvas.width / container.clientWidth
-        const scaleY = canvas.height / container.clientHeight
-
-        // Use the larger scale to cover
-        const scale = Math.max(scaleX, scaleY) * zoom
-
-        const x = (canvas.width / 2) - (originalImage.width * scale / 2) + (offset.x * (canvas.width / container.clientWidth))
-        const y = (canvas.height / 2) - (originalImage.height * scale / 2) + (offset.y * (canvas.height / container.clientHeight))
-
-        ctx.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale)
-
-        return new Promise(resolve => {
-            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.9)
+        return getCroppedBlob({
+            image: originalImage,
+            containerWidth: container.clientWidth,
+            containerHeight: container.clientHeight,
+            zoom,
+            offsetX: offset.x,
+            offsetY: offset.y,
         })
     }
 
@@ -210,8 +207,11 @@ export default function CreateAlbumForm() {
                             }}
                             onMouseDown={handleMouseDown}
                             onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                            onMouseLeave={handleMouseLeave}
+                            onMouseUp={handlePointerEnd}
+                            onMouseLeave={handlePointerEnd}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handlePointerEnd}
                         >
                             <img
                                 src={imageSrc}
